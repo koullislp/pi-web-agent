@@ -1,8 +1,9 @@
 #!/usr/bin/python
 import sys
 import os
+import time
 if 'MY_HOME' not in os.environ:
-    os.environ['MY_HOME']='/usr/libexec/pi-web-agent'
+  os.environ['MY_HOME']='/usr/libexec/pi-web-agent'
 sys.path.append(os.environ['MY_HOME'] + '/cgi-bin')
 sys.path.append(os.environ['MY_HOME'] + '/cgi-bin/toolkit')
 sys.path.append(os.environ['MY_HOME'] + '/cgi-bin/chrome')
@@ -16,57 +17,74 @@ from subprocess import Popen, PIPE
 import HTML
 cgitb.enable()
 from live_info import execute
+from DivManager import *
+from CommandLogger import *
 '''
 def checkError(view, errorcode) :
-    if errorcode != 0 :
-        view.setContent('Package Management', 'Something weird happened. . Try refreshing the page. .' )
-        exit('Something weird happened')
+  if errorcode != 0 :
+    view.setContent('Package Management', 'Something weird happened. . Try refreshing the page. .' )
+    exit('Something weird happened')
 '''
 def main():
-    '''
-    Application to manage all the most used packages using apt-get.
-    Unfinished.
-    '''
-    form = cgi.FieldStorage()
-    
-    sm=serviceManagerBuilder()
-    config=Configuration()
-    view = View(config.system.actions)
+  '''
+  Application to manage all the most used packages using apt-get.
+  Unfinished.
+  '''
+  form = cgi.FieldStorage()
 
-    htmlcode = ''
+  sm=serviceManagerBuilder()
+  config=Configuration()
+  view = View(config.system.actions)
 
-    ins = open( "recommendationsList.txt", "r" )
-    packages = []
-    for line in ins:
-      line = line.rstrip() # strip the new line
-      packages.append( line )
+  htmlcode = ''
+  htmlcode += doAptGetUpdateIfNecessary()
 
-    allPackages = [[]]
-    
-    for pName in packages :
-      checkedText = createOnOffSwitch( pName )
-      descriptionText = getDpkgInfo( pName, "Description" )
-      versionText = getDpkgInfo( pName, "Version" )
-      allPackages.append( [ pName, checkedText, descriptionText, versionText ] )
+  packages = []
+  packages = readFileToList("recommendationsList.txt")
 
-    htmlcode += HTML.table( allPackages, header_row=['Package Name', 'Status', 'Description', 'Version'] )
-    
-    htmlcode += '<div id="overlay" >'
-    htmlcode += '<div class="progress progress-striped active" style ="width: 400px; height: 80px; margin: auto; margin-top: 80px">'\
-                +'<div class="progress-bar"  role="progressbar" aria-valuenow="100"'\
-                +' aria-valuemin="0" aria-valuemax="100" style="width: 100%">'\
-                +' <span class="sr-only">100% Complete</span>  </div></div></div>'
+  allPackages = [[]]
+  allPackages = buildPackageInformationToList( packages )
 
+  htmlcode += HTML.table( allPackages, header_row=['Package Name', 'Status', 'Description', 'Version'] )
+  htmlcode += DivManager.getOverlayProggressBarDiv()#used for the proggress bar
 
-    view.setContent('Package Management', htmlcode )
-    view.output()
+  view.setContent('Package Management', htmlcode )
+  view.output()
+
+def doAptGetUpdateIfNecessary() :
+  errorMessage = ''
+  lastRecord = CommandLogger.readLastDateRecordLogOf( "apt-get update" )
+  errorMessage += 'lastRecord = ' + str(lastRecord) + '.<br>'
+  # dd/mm/yyyy format
+  todayDate = (time.strftime( "%d/%m/%Y" ))
+  errorMessage += 'todayDate = ' + str(todayDate) + '.<br>'
+  if lastRecord != str( todayDate ) :
+    errorMessage = CommandLogger.executeCommand("apt-get update")
+  return errorMessage
+
+def readFileToList( fileName ) :
+  ins = open( fileName, "r" )
+  packages = []
+  for line in ins :
+    line = line.rstrip() # strip the new line
+    packages.append( line )
+  return packages
+
+def buildPackageInformationToList( packages ) :
+  allPackages = [[]]  
+  for pName in packages :
+    checkedText = createOnOffSwitch( pName )
+    descriptionText = getDpkgInfo( pName, "Description" )
+    versionText = getDpkgInfo( pName, "Version" )
+    allPackages.append( [ pName, checkedText, descriptionText, versionText ] )
+  return allPackages
 
 def getDpkgInfo(pName, fieldName) :
-    bashCommand = "apt-query " + pName + " " + fieldName
-    output, errorcode = execute( bashCommand )
-    if output == "" :
-      return fieldName + " not available"
-    return output
+  bashCommand = "apt-query " + pName + " " + fieldName
+  output, errorcode = execute( bashCommand )
+  if output == "" :
+    return fieldName + " not available"
+  return output
         
 def createOnOffSwitch( pName ) :
   checkedText = ""
@@ -88,5 +106,5 @@ def createOnOffSwitch( pName ) :
   return checkedText
 
 if __name__ == '__main__':
-    main()
-    
+  main()
+
