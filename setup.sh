@@ -9,7 +9,7 @@ cd $(dirname $0)
 VERSION=0.1
 APPLICATION_PATH="usr/libexec/pi-web-agent"
 SERVICE_PATH="etc/init.d/pi-web-agent"
-DEPENDENCIES="tightvncserver apache2 libapache2-mod-dnssd"
+DEPENDENCIES="tightvncserver apache2 libapache2-mod-dnssd python-pygments python-pyquery python-requests python-setuptools"
 ANDROID_SERVICE="etc/init.d/pi-android-agent"
 VNC_SERVICE="etc/init.d/vncboot"
 ETC_PATH="etc/pi-web-agent"
@@ -27,6 +27,14 @@ CRON_JOBS=etc/cron.daily
 EXECUTE_BIN=usr/bin/execute-pwa.sh
 PI_APT=usr/bin/pi-package-management
 htpasswd_PATH=usr/libexec/pi-web-agent/.htpasswd
+
+configure_ask_dependency() {
+    curr_dir=$(pwd)
+    cd disposable
+    sudo python setup.py install
+    cd $curr_dir
+}
+
 this_install(){
     echo -n "Installing pi web agent "
     [[ ! -d "/$APPLICATION_PATH" && ! -f "/$SERVICE_PATH" && ! -d "/$ETC_PATH" ]] || {
