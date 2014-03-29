@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import cgitb
+import cgi, cgitb
 import os
 cgitb.enable()
 import sys
@@ -10,13 +10,13 @@ sys.path.append(os.environ['MY_HOME']+'/scripts')
 sys.path.append(os.environ['MY_HOME']+'/etc/config')
 sys.path.append(os.environ['MY_HOME']+'/cgi-bin/chrome')
 sys.path.append(os.environ['MY_HOME']+'/cgi-bin')
-from framework import view, config
+from framework import view, config, output
 from HTMLPageGenerator import *
 from BlueprintDesigner import *
 from live_info import execute
 import HTML
 
-gpio="/usr/share/wiringPi/gpio/gpio"
+gpio="/usr/local/bin/gpio"
 
 leftPins = ['3V3', 'SDA', 'SCL', 'GPIO7', '0v', \
 'GPIO0', 'GPIO2','GPIO3', '3v3','MOSI', \
@@ -60,7 +60,7 @@ def getValues():
         pinNo = name2PinNo(pin)
         if pinNo >= 0 :
             msgInitialize, errorcode=execute("sudo gpio-query value \"GPIO " + str(pinNo) + "\"")
-            if msgInitialize == "High":
+            if msgInitialize[0] == "H":
                 value=GPIO.HIGH
             else:
                 value=GPIO.LOW
@@ -105,7 +105,7 @@ def getFieldTexts(index, left_Pins, left_Direction_Pins, left_Values_Pins):
         
         
         valueText = generalText + str(valueText) + valueAttributeText
-        if value == GPIO.HIGH :
+        if int(value) == GPIO.HIGH:
             valueText += ' checked>'
         else:
             valueText += ' >'
@@ -152,7 +152,7 @@ def main():
     html_code += '</div>\n'
     html_code += '<center><div id="user_space"></div><button class="btn btn-primary" onclick="gpio_clear()">Cleanup GPIO</button></center>' 
     view.setContent('GPIO Manager', html_code)
-    view.output()
+    output(view, cgi.FieldStorage())
     
 if __name__ == '__main__':
     main()

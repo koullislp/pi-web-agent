@@ -6,7 +6,7 @@ cgitb.enable()
 import sys
 if 'MY_HOME' not in os.environ:
     os.environ['MY_HOME']='/usr/libexec/pi-web-agent'
-sys.path.append(os.environ['MY_HOME']+'/scripts')
+sys.path.append(os.environ['MY_HOME']+'/objects')
 sys.path.append(os.environ['MY_HOME']+'/etc/config')
 sys.path.append(os.environ['MY_HOME']+'/cgi-bin/chrome')
 sys.path.append(os.environ['MY_HOME']+'/cgi-bin')
@@ -14,7 +14,7 @@ from view import View
 from HTMLPageGenerator import *
 from BlueprintDesigner import *
 from live_info import *
-from framework import view
+from framework import view, output
 
 def parse_package_name(package_entry):
     package_elements=package_entry.split()
@@ -51,12 +51,13 @@ class UpdateManager(object):
         elif returncode == REBOOT_REQUIRED:
             return '<br>Reboot is required to apply previous updates.'
         elif returncode == UPDATE_READY or returncode == NO_ACTION:
-            return '<br><h4>System is up to date!</h4>'
+            return '<br><h4>System is up to date!</h4>\
+                <button type="button" onClick="check_update()" class="btn btn-success">Check</button>'
         elif returncode != NEW_UPDATE:
             return '<br><h4>Warning: Last update was interrupted!</h4>\n'+\
                 '<br><h5>Recovery procedure initiated. Please come back in a moment...</h5>'
         
-        packages_table_string = "<table border=\"1\"/><tr>"
+        packages_table_string = "<table border=\"1\"><tr>"
         for package_entry in update_info.split("\n"):
             package_name=parse_package_name(package_entry)
             if package_name == None:
@@ -67,7 +68,7 @@ class UpdateManager(object):
             packages_table_string += "</tr><tr>"
                 
         packages_table_string = packages_table_string + "</tr></table>"
-        descr_text='<h4>'+str(len(update_info.split("\n")) - 1) + " updates are available!</h4>"
+        descr_text=str(len(update_info.split("\n")) - 1) + " updates are available!"
         return '<br><h5>' + descr_text + "</h5>" + packages_table_string + div + '<br>'
 
     def _update(self):
@@ -86,6 +87,13 @@ class UpdateManager(object):
     
 def main():
     form = cgi.FieldStorage()
+    if (getAptBusy( )):
+      view.setContent('Update Manager',\
+      '<script src="/css/reloadBasedOnStatus.js"></script>\
+      The Update Manager is busy right now. . . \
+      This page will automatically reload once the service is available')
+      output(view, form)
+      return 
     updMgr = UpdateManager()
 
     if 'action' in form:       
@@ -93,7 +101,7 @@ def main():
             view.setContent('Update Manager', updMgr.performUpdate())
     else:
         view.setContent('Update Manager', updMgr.getDefaultView())
-    view.output()
+    output(view, form)
         
 if __name__ == '__main__':
     main()

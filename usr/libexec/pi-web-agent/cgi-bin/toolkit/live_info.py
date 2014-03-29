@@ -1,10 +1,16 @@
 #!/usr/bin/python
+
 import os
 import sys
 import subprocess
 import cgi
 import cgitb
 import xml.etree.ElementTree as ET
+if 'MY_HOME' not in os.environ:
+    os.environ['MY_HOME']='/usr/libexec/pi-web-agent'
+sys.path.append(os.environ['MY_HOME']+'/cgi-bin')
+sys.path.append(os.environ['MY_HOME']+'/objects')
+
 from services import *
 cgitb.enable()
 NO_ACTION=0
@@ -15,9 +21,6 @@ UPDATE_PENDING=100
 DPKG_CONFIG_NEEDED=200
 PROCESS_RUNNING=201
 
-if 'MY_HOME' not in os.environ:
-    os.environ['MY_HOME']='/usr/libexec/pi-web-agent'
-sys.path.append(os.environ['MY_HOME']+'/cgi-bin')
 from HTMLPageGenerator import *
 
 def execute(command):
@@ -33,6 +36,13 @@ def getMemoryUsage():
     command=os.environ['MY_HOME'] + '/scripts/memory_information MemTotal'
     total=execute(command)[0]
     return 100 - int((float(free)/float(total))*100)
+    
+def getAptBusy():
+    a, errorcode_apt_get = execute('pgrep apt-get')
+    a, errorcode_aptitude = execute('pgrep aptitude')
+    if errorcode_apt_get == 0 or errorcode_aptitude == 0 :
+      return True
+    return False
 
 def getDiskUsage():
     command='df -hP / | grep -o -w -E \'[0-9]*\%\' | tr -d \'%\''
@@ -56,8 +66,17 @@ def hostname():
     return execute(command)[0]
     
 def update_check():
-    command = 'sudo pi-update -c'
-    return execute(command)
+    command = 'sudo system_update_check.sh 0<&- &>/dev/null &'
+    execute(command)
+    return 0
+    
+def update_check_for_app():
+    command = 'update_check.py'
+    return execute(command)[0]   
+
+def application_update():
+    command = "sudo pi-web-agent-update -a"
+    return execute(command)[1]
     
 def update_check_quick():
     command = 'sudo pi-update -q'
@@ -105,7 +124,8 @@ def manage_vnc(turn):
 def main():
     cmds = {'mem':getMemoryUsage, 'kernel':getKernelVersion,\
      'disk': getDiskUsage, 'swap':swapUsage, 'hostname':hostname,\
-     'update':update_check_js, 'edit_service':turn_service, 'temp':get_temperature}
+     'update':update_check_js, 'edit_service':turn_service, 'temp':get_temperature, 'apt': getAptBusy, 'check' : update_check,\
+      'check_app': update_check_for_app, 'update_app' : application_update}
     fs = cgi.FieldStorage()
     if 'cmd' not in fs or fs['cmd'].value not in cmds.keys():
         response('Error')
@@ -114,7 +134,7 @@ def main():
             response(str(cmds[fs['cmd'].value](fs['param1'].value, fs['param2'].value)))        
         else:
             response(str(cmds[fs['cmd'].value]()))  
-
+    
 
 if __name__ == '__main__':
     main()    

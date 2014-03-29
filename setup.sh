@@ -9,7 +9,7 @@ cd $(dirname $0)
 VERSION=0.1
 APPLICATION_PATH="usr/libexec/pi-web-agent"
 SERVICE_PATH="etc/init.d/pi-web-agent"
-DEPENDENCIES="tightvncserver apache2 libapache2-mod-dnssd python-pygments python-pyquery python-requests python-setuptools"
+DEPENDENCIES="tightvncserver apache2 libapache2-mod-dnssd mplayer alsa-utils"
 ANDROID_SERVICE="etc/init.d/pi-android-agent"
 VNC_SERVICE="etc/init.d/vncboot"
 ETC_PATH="etc/pi-web-agent"
@@ -28,12 +28,10 @@ EXECUTE_BIN=usr/bin/execute-pwa.sh
 PI_APT=usr/bin/pi-package-management
 htpasswd_PATH=usr/libexec/pi-web-agent/.htpasswd
 
-configure_ask_dependency() {
-    curr_dir=$(pwd)
-    cd disposable
-    sudo python setup.py install
-    cd $curr_dir
-}
+UPDATE_APP_BIN=usr/bin/pi-web-agent-update
+UPDATE_CHECK_PY=usr/bin/update_check.py
+
+SYSTEM_UPDATE_CHECK=usr/bin/system_update_check.sh
 
 this_install(){
     echo -n "Installing pi web agent "
@@ -54,9 +52,16 @@ this_install(){
     /bin/cp -v "$ANDROID_SERVICE" "/$ANDROID_SERVICE"
     /bin/cp -v "$EXECUTE_BIN" "/$EXECUTE_BIN"
     /bin/cp -v "$PI_APT" "/$PI_APT"
+    /bin/cp -v "$UPDATE_APP_BIN" "/$UPDATE_APP_BIN"
+    /bin/cp -v "$UPDATE_CHECK_PY" "/$UPDATE_CHECK_PY"
+    /bin/cp -v "$SYSTEM_UPDATE_CHECK" "/$SYSTEM_UPDATE_CHECK"
     chmod +x "/$EXECUTE_BIN"
     chmod +x "/$ANDROID_SERVICE"
     chmod +x "/$SERVICE_PATH"
+    chmod +x "/$UPDATE_APP_BIN"
+    chmod +x "/$UPDATE_CHECK_PY"
+    chmod +x "/$SYSTEM_UPDATE_CHECK"
+
     /bin/cp -rv "$ETC_PATH" "/$ETC_PATH"
     rm -rf "/$ETC_PATH/modules" "/$ETC_PATH/run"
     ln -s "/usr/lib/apache2/modules" "/$ETC_PATH/modules"
@@ -94,8 +99,7 @@ this_install(){
     chmod 644 /usr/libexec/pi-web-agent/.htpasswd
     print_ok
     echo "Installing wiringPi - examples excluded"
-    /bin/cp -av $wiringPI /$wiringPI
-    cd /$wiringPI
+    cd $wiringPI
     chmod +x ./build
     ./build
     echo "DONE"
@@ -131,13 +135,17 @@ this_uninstall() {
     /bin/rm "/$EXECUTE_BIN"
     /bin/rm "/usr/bin/execute.sh"
     /bin/rm "/$PI_APT"
+    
+    /bin/rm "/$UPDATE_CHECK_PY"
+    /bin/rm "/$UPDATE_APP_BIN"
+    /bin/rm "/$SYSTEM_UPDATE_CHECK"
     /etc/init.d/vncboot stop
     rm /etc/init.d/vncboot
 
     print_ok
     echo "Deleting user account of appliance..."
     rm /$SUDOERS_D
-    rm -r /$wiringPI
+    rm -r /$wiringPI || echo "wiringPi OK"
     rm -r /etc/pi-web-agent
     userdel -f pi-web-agent
     print_ok "DONE"
@@ -161,7 +169,7 @@ this_reinstall() {
     echo "Keeping the same password"
     cp /$htpasswd_PATH $htpasswd_PATH 
     this_uninstall
-    this_install
+    this_install $1
 }
 
 print_ok() {
@@ -221,3 +229,4 @@ case $1 in
 esac    
 
 cd $called_from
+

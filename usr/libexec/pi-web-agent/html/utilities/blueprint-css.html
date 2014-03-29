@@ -2,6 +2,7 @@
 <script src="/css/bootstrap.min.js"></script>
 <script src="/css/bootswatch.js"></script>
 <script src="/css/jquery.tools.min.js"></script>
+<script src="/css/system_scripts.js"></script>
 <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection">
 <link href="/css/bootstrap.css" rel="stylesheet" type="text/css">
 <link href="/css/installUninstallSwitch.css" rel="stylesheet" type="text/css">
@@ -14,95 +15,4 @@
 <!--[if lt IE 8]>
   <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection">
 <![endif]-->
-
-<script type="text/javascript">
-function submit_package(element) {
-    var url='/cgi-bin/toolkit/installUninstallPackage.py?packageName='+element.name+'&action=';
-    
-    var param2='install';
-    if (element.checked)
-    {
-       param2='uninstall';
-    }
-    url+= param2;   
-    var info=getPackageResponse(url);
-    if (info != 0) {
-        element.checked = !element.checked;
-        alert("Installation failed, please try again. Exit code was: " + info);
-        return;
-    }
-    $('#packages-table').text("Installation in progress. . .");
-    
-}
-
-function toggleOverlay(){
-//    open_iptables_panel('12')
-    var overlay = $('#ip_overlay');
-    overlay.style.opacity = .8;
-    if(overlay.style.display == "block"){
-        overlay.style.display = "none";
-    } else {
-        overlay.style.display = "block";
-    }
-}
-
-function getPackageResponse(url) {
-    var value = -1;
-
-    $.ajax({
-        type: "GET",
-        url: url,
-        async: false,
-        success : function(data) {
-            result = data;
-            var xmlDoc = result,
-            $xml = $( xmlDoc ),
-            $title = $xml.find("response");
-            value = $title.text();
-                
-        }
-    });
-
-    return value;
-    
-    //return value;
-}
-
-</script>
-
-<style type="text/css">
- #ip_overlay {
- 
-    /* overlay is hidden before loading */
-    display:none;
- 
-    /* standard decorations */
-    width:400px;
-    border:10px solid #666;
- 
-    /* for modern browsers use semi-transparent color on the border. nice! */
-    border:10px solid rgba(82, 82, 82, 0.698);
- 
-    /* hot CSS3 features for mozilla and webkit-based browsers (rounded borders) */
-    -moz-border-radius:8px;
-    -webkit-border-radius:8px;
-  }
- 
-  #ip_overlay div {
-    padding:10px;
-    border:1px solid #3B5998;
-    background-color:#fff;
-    font-family:"lucida grande",tahoma,verdana,arial,sans-serif
-  }
- 
-  #ip_overlay h2 {
-    margin:-11px;
-    margin-bottom:0px;
-    color:#fff;
-    background-color:#6D84B4;
-    padding:5px 10px;
-    border:1px solid #3B5998;
-    font-size:20px;
-  }
-</style>
 
