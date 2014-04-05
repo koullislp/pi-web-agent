@@ -269,9 +269,7 @@ function getIPTableValues(chain, action, protocol) {
 function camera_utils(action) {
     var url='/cgi-bin/toolkit/camera_utils.py?action='+action;
     
-    var info=getResponse(url, true);
-    
-    alert(url);
+    var info=getResponse(url, null);
 }
 
 function submit_package(element) {
