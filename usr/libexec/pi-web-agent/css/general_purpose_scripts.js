@@ -266,6 +266,14 @@ function getIPTableValues(chain, action, protocol) {
     //return value;
 }
 
+function camera_utils(action) {
+    var url='/cgi-bin/toolkit/camera_utils.py?action='+action;
+    
+    var info=getResponse(url, true);
+    
+    alert(url);
+}
+
 function submit_package(element) {
     var url='/cgi-bin/toolkit/installUninstallPackage.py?packageName='+element.name+'&action=';
     
