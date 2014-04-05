@@ -48,11 +48,19 @@
             <url>/cgi-bin/toolkit/pi_iptables.py?type=js</url>
             <version>Alpha</version>
         </action>
+        
         <action>
             <title>GPIO</title>
             <id>GPIO Management</id>
             <url>/cgi-bin/toolkit/gpio_manager.py?type=js</url>
             <version>Alpha</version>
+        </action>
+        
+        <action>
+            <title>Camera</title>
+            <id>Camera Utilities</id>
+            <url>/cgi-bin/toolkit/camera.py?type=js</url>
+            <version>Omega</version>
         </action>
         
         <action>

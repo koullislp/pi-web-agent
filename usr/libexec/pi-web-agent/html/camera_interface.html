@@ -1,0 +1,21 @@
+<div id="camera_overlay">
+    <embed type="application/x-vlc-plugin" pluginspage="http://www.videolan.org"
+           width="640"
+           height="480"
+           id="vlc">
+    </embed>
+    <script language="Javascript">
+    var vlc = document.getElementById("vlc");
+    vlc.audio.toggleMute();
+    </script>
+</div>
+<div id="toolbar"">
+<a id="takeSnapshot" class="btn btn-primary" + \
+    onclick="camera_utils('snapshot')">Snapshot</a>
+<a id="makePreview" class="btn btn-primary" + \
+    onclick="camera_utils('preview')">Preview</a>
+<a id="startRecord" class="btn btn-primary" + \
+    onclick="camera_utils('startrecord')">Record</a>
+<a id="stopRecord" class="btn btn-primary" + \
+    onclick="camera_utils('stop')">Stop</a>
+</div>
