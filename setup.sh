@@ -22,6 +22,7 @@ PI_FIX=usr/bin/pi-fix
 APT_QUERY=usr/bin/apt-query
 SUDOERS_D=etc/sudoers.d/pi-web-agent
 wiringPI=usr/share/wiringPi
+CAMERA_MEDIA=usr/share/camera-media
 GPIO_QUERY=usr/bin/gpio-query
 CRON_JOBS=etc/cron.daily
 EXECUTE_BIN=usr/bin/execute-pwa.sh
