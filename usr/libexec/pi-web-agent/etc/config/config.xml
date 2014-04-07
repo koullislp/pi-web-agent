@@ -59,7 +59,7 @@
         <action>
             <title>Camera</title>
             <id>Camera Utilities</id>
-            <url>/cgi-bin/toolkit/camera.py?type=js</url>
+            <url>/cgi-bin/toolkit/camera_manager.py?type=js</url>
             <version>Omega</version>
         </action>
         

@@ -8,6 +8,7 @@ sys.path.append(os.environ['MY_HOME'] + '/cgi-bin/toolkit')
 sys.path.append(os.environ['MY_HOME'] + '/cgi-bin/chrome')
 sys.path.append(os.environ['MY_HOME'] + '/objects')
 sys.path.append(os.environ['MY_HOME'] + '/scripts')
+
 from live_info import execute
 from services import *
 from view import *
@@ -25,7 +26,7 @@ def main():
     config=Configuration()
     view = View(config.system.actions)
     
-    pictures, returncode = execute(os.environ['MY_HOME'] + "/scripts/get_pictures.sh /usr/share/pi-web-agent/camera-media")
+    pictures, returncode = execute(os.environ['MY_HOME'] + "/scripts/get_pictures.sh /usr/libexec/pi-web-agent/cgi-bin/toolkit")
     linearray = pictures.split('\n')
     
     html = '<div id="camera_toolbar">'
@@ -39,13 +40,10 @@ def main():
     for thisline in linearray:
         justname = thisline.split('/')
         html += '<a href="'+thisline +'" rel="thumbnail"><img src="'+thisline+'" style="width: 50px; height: 50px" /></a>'
-        #html += '<a href="'+thisline+'" rel="thumbnail">'+justname[len(justname)-1]+'</a>'
-        
     html += '</p></div><br>'
 
     view.setContent('Live camera', html)
     output(view, cgi.FieldStorage())
     
-
 if __name__ == '__main__':
     main()
